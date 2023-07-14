@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <sstream>
 
 struct Product {
     std::string name;
@@ -16,14 +18,14 @@ public:
         products.push_back(product);
     }
 
-        // Виводимо повідомлення коли кошик порожній
-    void displayCart() {
+    // Виводимо повідомлення якщо кошик порожній
+    void displayCart() const {
         if (products.empty()) {
             std::cout << "The basket is empty." << std::endl;
             return;
         }
 
-        //Вивідимо назву, ціну, характеристику, та список товарів
+        //Виводимо назву, ціну, характеристику, та список товарів
         std::cout << "Items in cart:" << std::endl;
         for (const auto& product : products) {
             std::cout << "Name: " << product.name << std::endl;
@@ -32,69 +34,258 @@ public:
             std::cout << std::endl;
         }
     }
+
+    //Розрахунок загальної ціни товарів в кошику
+    double calculateTotalPrice() const {
+        double totalPrice = 0.0;
+        for (const auto& product : products) {
+            totalPrice += product.price;
+        }
+        return totalPrice;
+    }
+
+    bool isEmpty() const {
+        return products.empty();
+    }
 };
 
+//  Конструкція классу "User"
+class User {
+private:
+    std::string username;
+    std::string password;
+    ShoppingCart cart;
+
+public:
+    User(const std::string& username, const std::string& password)
+            : username(username), password(password) {}
+
+    std::string getUsername() const {
+        return username;
+    }
+
+    bool checkPassword(const std::string& inputPassword) const {
+        return password == inputPassword;
+    }
+
+    ShoppingCart& getCart() {
+        return cart;
+    }
+};
+
+//"Вітрина магазину"
 int main() {
     std::vector<Product> availableProducts{
-            {"Product name 1", 1000.0, "Features 1"},
-            {"Product name 2", 2000.0, "Features 2"},
-            {"Product name 3", 3000.0, "Features 3"}
+            {"iPhone 14 Pro Max", 1799.99, "512GB. Color: Purple"},
+            {"iPhone 14 Pro", 1399.99, "512GB. Color: Gold"},
+            {"iPhone 14", 999.99, "512GB. Color: Red"},
+            {"iPhone 13 Pro Max", 1499.00, "256GB. Color: Blue"},
+            {"iPhone 13 mini", 454.99, "128GB. Color: Pink"},
+            {"Samsung Galaxy S23 Ultra", 1899.98, "1TB. Color: Black"},
+            {"Samsung Galaxy S22 Ultra", 1549.98, "256GB. Color: White"},
+            {"Samsung Galaxy Z Flip3 5G", 700.19, "256GB. Color: White"},
+            {"Samsung Galaxy Note 20 5G", 212.85, "128GB. Color: Bronze"},
+            {"Samsung Galaxy S21", 220.10, "128GB. Color: Purple"}
     };
 
-    ShoppingCart cart;
+    // Данні поточного користувача
+    std::vector<User> users;
+    User currentUser("", "");
 
     std::cout << "Welcome to the online store \"Cellmart\"!" << std::endl;
 
-    //Меню магазину. Перегляд товарів, додавання товару в кошик, перегляд кошика, вихід
+
+    //Загальне меню магазину
     while (true) {
         std::cout << std::endl;
-        std::cout << "1. View products" << std::endl;
-        std::cout << "2. Add product to cart" << std::endl;
-        std::cout << "3. View cart" << std::endl;
-        std::cout << "4. Exit" << std::endl;
+
+        if (currentUser.getUsername() == "") {
+            std::cout << "1. Create account" << std::endl;
+            std::cout << "2. Log in" << std::endl;
+            std::cout << "3. Exit" << std::endl;
+        } else {
+            std::cout << "1. View products" << std::endl;
+            std::cout << "2. Add product to cart" << std::endl;
+            std::cout << "3. View cart and total price" << std::endl;
+            std::cout << "4. Checkout" << std::endl;
+            std::cout << "5. Delete account" << std::endl;
+            std::cout << "6. Log out" << std::endl;
+            std::cout << "7. Exit" << std::endl;
+        }
+
         std::cout << "Select an action: ";
 
         int choice;
         std::cin >> choice;
-        
-            //Вивід списку доступних товарів, назви, ціни та валюти
-        switch (choice) {
-            case 1: {
-                std::cout << "Available products:" << std::endl;
-                for (size_t i = 0; i < availableProducts.size(); ++i) {
-                    const auto& product = availableProducts[i];
-                    std::cout << i + 1 << ". " << product.name << " - " << product.price << "UAH" << std::endl;
-                }
-                break;
-            }
-            case 2: {
-                std::cout << "Enter the number of the product you want to add to the cart:";
-                size_t productIndex;
-                std::cin >> productIndex;
 
-                //Вивід повідомлення про додавання товару в кошик, та  не правильний номер товару
-                if (productIndex > 0 && productIndex <= availableProducts.size()) {
-                    const auto& product = availableProducts[productIndex - 1];
-                    cart.addProduct(product);
-                    std::cout << "The product has been added to the cart." << std::endl;
-                } else {
-                    std::cout << "Invalid item number." << std::endl;
+        //Виведення сповіщень до різних функцій
+        if (currentUser.getUsername() == "") {
+            switch (choice) {
+                case 1: {
+                    std::string username;
+                    std::string password;
+
+                    std::cout << "Enter a username: ";
+                    std::cin >> username;
+
+                    std::cout << "Enter a password: ";
+                    std::cin >> password;
+
+                    users.emplace_back(username, password);
+                    std::cout << std::endl;
+                    std::cout << "Account created successfully!" << std::endl;
+                    break;
                 }
-                break;
+                case 2: {
+                    std::string username;
+                    std::string password;
+
+                    std::cout << "Enter your username: ";
+                    std::cin >> username;
+
+                    std::cout << "Enter your password: ";
+                    std::cin >> password;
+
+                    bool found = false;
+                    for (const auto& user : users) {
+                        if (user.getUsername() == username && user.checkPassword(password)) {
+                            currentUser = user;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        std::cout << std::endl;
+                        std::cout << "Logged in as " << currentUser.getUsername() << std::endl;
+                        std::cout << "Welcome to Cellmart!" << std::endl;
+                    } else {
+                        std::cout << std::endl;
+                        std::cout << "Invalid username or password." << std::endl;
+                    }
+                    break;
+                }
+                case 3: {
+                    std::cout << std::endl;
+                    std::cout << "Goodbye!" << std::endl;
+                    return 0;
+                }
+                default: {
+                    std::cout << std::endl;
+                    std::cout << "Wrong choice. Try again." << std::endl;
+                    break;
+                }
             }
-            case 3: {
-                cart.displayCart();
-                break;
-            }
-            case 4: {
-                std::cout << "Goodbye!" << std::endl;
-                return 0;
-            }
-            default: {
-                std::cout << "Wrong choice. Try again." << std::endl;
-                break;
+        } else {
+            switch (choice) {
+
+                //Вивід списку доступних товарів ,ціни, валюти
+                case 1: {
+                    std::cout << std::endl;
+                    std::cout << "Available products:" << std::endl;
+                    for (size_t i = 0; i < availableProducts.size(); ++i) {
+                        const auto& product = availableProducts[i];
+                        std::cout << i + 1 << ". " << product.name << " - " << product.price << " USD" << std::endl;
+                    }
+                    break;
+                }
+                case 2: {
+                    //Функція для вибору товарів в рядок через кому/пробіл
+                    std::cout << std::endl;
+                    std::cout << "Enter the number of the product you want to add to the cart separated by space or comma: ";
+                    std::string productNumbers;
+                    std::cin.ignore();
+
+                    //Отримання виведеного рядка
+                    std::getline(std::cin, productNumbers);
+
+                    std::istringstream iss(productNumbers);
+                    std::vector<size_t> selectedProductIndices;
+
+                    size_t productIndex;
+                    while (iss >> productIndex) {
+                        if (productIndex > 0 && productIndex <= availableProducts.size()) {
+                            selectedProductIndices.push_back(productIndex);
+                        }
+                    }
+
+                    if (!selectedProductIndices.empty()) {
+                        for (const auto& index : selectedProductIndices) {
+                            const auto& product = availableProducts[index - 1];
+                            currentUser.getCart().addProduct(product);
+                        }
+                        std::cout << "The product has been added to the cart." << std::endl;
+                    } else {
+                        std::cout << "Invalid item numbers." << std::endl;
+                    }
+                    break;
+                }
+                case 3: {
+                    std::cout << std::endl;
+                    std::cout << "Cart of " << currentUser.getUsername() << ":" << std::endl;
+                    currentUser.getCart().displayCart();
+                    std::cout << "Total price: " << currentUser.getCart().calculateTotalPrice() << " USD" << std::endl;
+                    break;
+                }
+                //Реальзація функції доставки товарів
+                case 4: {
+                    std::cout << std::endl;
+                    if (currentUser.getCart().isEmpty()) {
+                        std::cout << "Please select items for delivery." << std::endl;
+                    } else {
+                        std::cout << "Proceeding with checkout,.." << std::endl;
+
+                        std::string address;
+                        std::string city;
+                        std::string phoneNumber;
+
+                        std::cout << "Enter your post office number: ";
+                        std::cin.ignore();
+                        std::getline(std::cin, address);
+
+                        std::cout << "Enter your city: ";
+                        std::getline(std::cin, city);
+
+                        std::cout << "Enter your phone number (+380XXXXXXXXX): ";
+                        std::cin >> phoneNumber;
+
+                        // Перевірка номеру телефону
+                        if (phoneNumber.length() == 13 && phoneNumber[0] == '+' && std::all_of(phoneNumber.begin() + 1, phoneNumber.end(), ::isdigit)) {
+                            std::cout << "Thank you for the order, please wait for the message about the arrival of the parcel! Have a good day. Your Cellmart Store :)" << std::endl;
+                        } else {
+                            std::cout << "The phone number is entered incorrectly." << std::endl;
+                        }
+
+                    }
+                    break;
+                }
+                case 5: {
+                    std::cout << std::endl;
+                    users.erase(std::remove_if(users.begin(), users.end(),
+                                               [&](const User& user) { return user.getUsername() == currentUser.getUsername(); }),
+                                users.end());
+
+                    currentUser = User("", "");
+                    std::cout << "Account deleted successfully." << std::endl;
+                    break;
+                }
+                case 6: {
+                    std::cout << std::endl;
+                    currentUser = User("", "");
+                    std::cout << "Logged out successfully." << std::endl;
+                    break;
+                }
+                case 7: {
+                    std::cout << std::endl;
+                    std::cout << "Goodbye!" << std::endl;
+                    return 0;
+                }
+                default: {
+                    std::cout << std::endl;
+                    std::cout << "Wrong choice. Try again." << std::endl;
+                    break;
+                }
             }
         }
     }
 }
- 
