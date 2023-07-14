@@ -17,14 +17,14 @@ public:
         products.push_back(product);
     }
 
-    // Виводить повідомлення, якщо кошик порожній
+    // Виводимо повідомлення якщо кошик порожній
     void displayCart() const {
         if (products.empty()) {
             std::cout << "The basket is empty." << std::endl;
             return;
         }
 
-        // Виводить назву, ціну, характеристики та список товарів у кошику
+        //Вивідимо назву, ціну, характеристику, та список товарів
         std::cout << "Items in cart:" << std::endl;
         for (const auto& product : products) {
             std::cout << "Name: " << product.name << std::endl;
@@ -34,7 +34,7 @@ public:
         }
     }
 
-    // Розраховує загальну ціну товарів у кошику
+    //Розрахунок загальної ціни товарів в кошику
     double calculateTotalPrice() const {
         double totalPrice = 0.0;
         for (const auto& product : products) {
@@ -43,7 +43,7 @@ public:
         return totalPrice;
     }
 };
-        //  Конструкція классу "User"
+//  Конструкція классу "User"
 class User {
 private:
     std::string username;
@@ -66,7 +66,7 @@ public:
         return cart;
     }
 };
-        //"Вітрина магазину"
+//"Вітрина магазину"
 int main() {
     std::vector<Product> availableProducts{
             {"iPhone 14 Pro Max", 1799.99, "512GB. Color: Purple"},
@@ -80,13 +80,13 @@ int main() {
             {"Samsung Galaxy Note 20 5G", 212.85, "128GB. Color: Bronze"},
             {"Samsung Galaxy S21", 220.10, "128GB. Color: Purple"}
     };
-
+    // Данні поточного користувача
     std::vector<User> users;
     User currentUser("", "");
 
     std::cout << "Welcome to the online store \"Cellmart\"!" << std::endl;
 
-    //Блок меню магазину
+    //Загальне меню магазину
     while (true) {
         std::cout << std::endl;
 
@@ -168,6 +168,8 @@ int main() {
             }
         } else {
             switch (choice) {
+
+                //Вивід списку доступних товарів ,ціни, валюти
                 case 1: {
                     std::cout << std::endl;
                     std::cout << "Available products:" << std::endl;
