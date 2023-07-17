@@ -17,24 +17,21 @@ public:
         products.push_back(product);
     }
 
-    // Виводимо повідомлення якщо кошик порожній
     void displayCart() const {
         if (products.empty()) {
-            std::cout << "The basket is empty." << std::endl;
+            std::cout << "The cart is empty." << std::endl;
             return;
         }
 
-        //Вивідимо назву, ціну, характеристику, та список товарів
-        std::cout << "Items in cart:" << std::endl;
+        std::cout << "Items in the cart:" << std::endl;
         for (const auto& product : products) {
             std::cout << "Name: " << product.name << std::endl;
             std::cout << "Price: " << product.price << std::endl;
-            std::cout << "Characteristics: " << product.specifications << std::endl;
+            std::cout << "Specifications: " << product.specifications << std::endl;
             std::cout << std::endl;
         }
     }
 
-    //Розрахунок загальної ціни товарів в кошику
     double calculateTotalPrice() const {
         double totalPrice = 0.0;
         for (const auto& product : products) {
@@ -43,7 +40,7 @@ public:
         return totalPrice;
     }
 };
-//  Конструкція классу "User"
+
 class User {
 private:
     std::string username;
@@ -66,7 +63,46 @@ public:
         return cart;
     }
 };
-//"Вітрина магазину"
+
+void viewProducts(const std::vector<Product>& availableProducts) {
+    std::cout << "Available products:" << std::endl;
+    for (size_t i = 0; i < availableProducts.size(); ++i) {
+        const auto& product = availableProducts[i];
+        std::cout << i + 1 << ". " << product.name << " - " << product.price << " USD" << std::endl;
+    }
+}
+
+void addToCart(User& currentUser, const std::vector<Product>& availableProducts) {
+    viewProducts(availableProducts);
+
+    std::cout << "Enter the number of the product you want to add to the cart:";
+    size_t productIndex;
+    std::cin >> productIndex;
+
+    if (productIndex > 0 && productIndex <= availableProducts.size()) {
+        const auto& product = availableProducts[productIndex - 1];
+        currentUser.getCart().addProduct(product);
+        std::cout << "The product has been added to the cart." << std::endl;
+    } else {
+        std::cout << "Invalid item number." << std::endl;
+    }
+}
+
+void viewCartAndTotalPrice(User currentUser) {
+    std::cout << "User's cart: " << currentUser.getUsername() << ":" << std::endl;
+    currentUser.getCart().displayCart();
+    std::cout << "Total price: " << currentUser.getCart().calculateTotalPrice() << " USD" << std::endl;
+}
+
+void deleteAccount(std::vector<User>& users, User& currentUser) {
+    users.erase(std::remove_if(users.begin(), users.end(),
+                               [&](const User& user) { return user.getUsername() == currentUser.getUsername(); }),
+                users.end());
+
+    currentUser = User("", "");
+    std::cout << "Account deleted successfully." << std::endl;
+}
+
 int main() {
     std::vector<Product> availableProducts{
             {"iPhone 14 Pro Max", 1799.99, "512GB. Color: Purple"},
@@ -78,27 +114,25 @@ int main() {
             {"Samsung Galaxy S22 Ultra", 1549.98, "256GB. Color: White"},
             {"Samsung Galaxy Z Flip3 5G", 700.19, "256GB. Color: White"},
             {"Samsung Galaxy Note 20 5G", 212.85, "128GB. Color: Bronze"},
-            {"Samsung Galaxy S21", 220.10, "128GB. Color: Purple"}
-    };
-    // Данні поточного користувача
+            {"Samsung Galaxy S21", 220.10, "128GB. Color: Purple"}};
+
     std::vector<User> users;
     User currentUser("", "");
 
     std::cout << "Welcome to the online store \"Cellmart\"!" << std::endl;
 
-    //Загальне меню магазину
     while (true) {
         std::cout << std::endl;
 
         if (currentUser.getUsername() == "") {
-            std::cout << "1. Create account" << std::endl;
+            std::cout << "1. Create an account" << std::endl;
             std::cout << "2. Log in" << std::endl;
             std::cout << "3. Exit" << std::endl;
         } else {
             std::cout << "1. View products" << std::endl;
-            std::cout << "2. Add product to cart" << std::endl;
-            std::cout << "3. View cart and total price" << std::endl;
-            std::cout << "4. Delete account" << std::endl;
+            std::cout << "2. Add a product to the cart" << std::endl;
+            std::cout << "3. View the cart and total price" << std::endl;
+            std::cout << "4. Delete the account" << std::endl;
             std::cout << "5. Log out" << std::endl;
             std::cout << "6. Exit" << std::endl;
         }
@@ -108,7 +142,6 @@ int main() {
         int choice;
         std::cin >> choice;
 
-        //Виведення сповіщень до різних функцій
         if (currentUser.getUsername() == "") {
             switch (choice) {
                 case 1: {
@@ -168,53 +201,25 @@ int main() {
             }
         } else {
             switch (choice) {
-
-                //Вивід списку доступних товарів ,ціни, валюти
                 case 1: {
-                    std::cout << std::endl;
-                    std::cout << "Available products:" << std::endl;
-                    for (size_t i = 0; i < availableProducts.size(); ++i) {
-                        const auto& product = availableProducts[i];
-                        std::cout << i + 1 << ". " << product.name << " - " << product.price << " USD" << std::endl;
-                    }
+                    viewProducts(availableProducts);
                     break;
                 }
                 case 2: {
-                    std::cout << std::endl;
-                    std::cout << "Enter the number of the product you want to add to the cart:";
-                    size_t productIndex;
-                    std::cin >> productIndex;
-
-                    if (productIndex > 0 && productIndex <= availableProducts.size()) {
-                        const auto& product = availableProducts[productIndex - 1];
-                        currentUser.getCart().addProduct(product);
-                        std::cout << "The product has been added to the cart." << std::endl;
-                    } else {
-                        std::cout << "Invalid item number." << std::endl;
-                    }
+                    addToCart(currentUser, availableProducts);
                     break;
                 }
                 case 3: {
-                    std::cout << std::endl;
-                    std::cout << "Cart of " << currentUser.getUsername() << ":" << std::endl;
-                    currentUser.getCart().displayCart();
-                    std::cout << "Total price: " << currentUser.getCart().calculateTotalPrice() << " USD" << std::endl;
+                    viewCartAndTotalPrice(currentUser);
                     break;
                 }
                 case 4: {
-                    std::cout << std::endl;
-                    users.erase(std::remove_if(users.begin(), users.end(),
-                                               [&](const User& user) { return user.getUsername() == currentUser.getUsername(); }),
-                                users.end());
-
-                    currentUser = User("", "");
-                    std::cout << "Account deleted successfully." << std::endl;
+                    deleteAccount(users, currentUser);
                     break;
                 }
                 case 5: {
-                    std::cout << std::endl;
                     currentUser = User("", "");
-                    std::cout << "Logged out successfully." << std::endl;
+                    std::cout << "You have successfully logged out." << std::endl;
                     break;
                 }
                 case 6: {
