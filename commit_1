@@ -2,17 +2,17 @@
 #include <vector>
 #include <algorithm>
 
-    struct Product {
-        std::string name;
+struct Product {
+    std::string name;
     double price;
-        std::string specifications;
-    };
+    std::string specifications;
+};
 
-    class ShoppingCart {
-        private:
+class ShoppingCart {
+private:
     std::vector<Product> products;
 
-        public:
+public:
     void addProduct(const Product& product) {
         products.push_back(product);
     }
@@ -28,7 +28,7 @@
         std::cout << "           Items in Your Shopping Cart         " << std::endl;
         std::cout << "-----------------------------------------------" << std::endl;
 
-    //Вивідимо назву, ціну, характеристику, та список товарів
+        //Вивідимо назву, ціну, характеристику, та список товарів
         for (const auto& product : products) {
             std::cout << "Name: " << product.name << std::endl;
             std::cout << "Price: $" << product.price << std::endl;
@@ -36,7 +36,7 @@
             std::cout << "-----------------------------------------------" << std::endl;
         }
     }
-        //Розрахунок загальної ціни товарів в кошику
+    //Розрахунок загальної ціни товарів в кошику
     double calculateTotalPrice() const {
         double totalPrice = 0.0;
         for (const auto& product : products) {
@@ -46,13 +46,13 @@
     }
 };
 
-    class User {
-        private:
+class User {
+private:
     std::string username;
     std::string password;
     ShoppingCart cart;
 
-     public:
+public:
     User(const std::string& username, const std::string& password)
             : username(username), password(password) {}
 
@@ -68,21 +68,21 @@
         return cart;
     }
 };
-        //Вивід списку доступних товарів ,ціни, валюти
-        void viewProducts(const std::vector<Product>& availableProducts) {
-             std::cout << "Available products:" << std::endl;
-            for (size_t i = 0; i < availableProducts.size(); ++i) {
+//Вивід списку доступних товарів ,ціни, валюти
+void viewProducts(const std::vector<Product>& availableProducts) {
+    std::cout << "Available products:" << std::endl;
+    for (size_t i = 0; i < availableProducts.size(); ++i) {
         const auto& product = availableProducts[i];
-            std::cout << i + 1 << ". " << product.name << " - $" << product.price << std::endl;
+        std::cout << i + 1 << ". " << product.name << " - $" << product.price << std::endl;
     }
 }
 
-        bool isUserExists(const std::vector<User>& users, const std::string& username, const std::string& password) {
-             return std::any_of(users.begin(), users.end(),
+bool isUserExists(const std::vector<User>& users, const std::string& username, const std::string& password) {
+    return std::any_of(users.begin(), users.end(),
                        [&](const User& user) { return user.getUsername() == username && user.checkPassword(password); });
 }
 
-    void addToCart(User& currentUser, const std::vector<Product>& availableProducts) {
+void addToCart(User& currentUser, const std::vector<Product>& availableProducts) {
     viewProducts(availableProducts);
 
     size_t productIndex;
@@ -102,20 +102,20 @@
     std::cout << "The product has been added to your shopping cart." << std::endl;
 }
 
-        int main() {
+int main() {
     std::vector<Product> availableProducts{
             {"iPhone 14 Pro Max", 1799.99, "512GB. Color: Purple"},
             {"iPhone 14 Pro", 1399.99, "512GB. Color: Gold"},
             {"iPhone 14", 999.99, "512GB. Color: Red"}
     };
 
-            // Данні поточного користувача
+    // Данні поточного користувача
     std::vector<User> users;
     User currentUser("", "");
 
     std::cout << "Welcome to the online store \"Cellmart\"!" << std::endl;
 
-            //Загальне меню магазину
+    //Загальне меню магазину
     while (true) {
         std::cout << std::endl;
         std::cout << "1. Create an account" << std::endl;
@@ -146,6 +146,16 @@
                 break;
             }
             case 2: {
+                if (currentUser.getUsername() != "") {
+                    std::cout << "You are already logged in as " << currentUser.getUsername() << std::endl;
+                    break;
+                }
+
+                if (users.empty()) {
+                    std::cout << "There are no user accounts, first create an account." << std::endl;
+                    break;
+                }
+
                 std::string username;
                 std::string password;
 
@@ -155,11 +165,13 @@
                 std::cout << "Enter your password: ";
                 std::cin >> password;
 
-                if (isUserExists(users, username, password)) {
+                bool userLoggedIn = isUserExists(users, username, password);
+
+                if (userLoggedIn) {
                     currentUser = User(username, password);
-                    std::cout << "Logged in as " << currentUser.getUsername() << std::endl;
+                    std::cout << "You are logged in as " << currentUser.getUsername() << std::endl;
                 } else {
-                    std::cout << "Invalid username or password." << std::endl;
+                    std::cout << "Incorrect username or password." << std::endl;
                 }
                 break;
             }
