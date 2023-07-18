@@ -2,37 +2,41 @@
 #include <vector>
 #include <algorithm>
 
-struct Product {
-    std::string name;
+    struct Product {
+        std::string name;
     double price;
-    std::string specifications;
-};
+        std::string specifications;
+    };
 
-class ShoppingCart {
-private:
+    class ShoppingCart {
+        private:
     std::vector<Product> products;
 
-public:
+        public:
     void addProduct(const Product& product) {
         products.push_back(product);
     }
 
-        // Виводимо повідомлення якщо кошик порожній
+    // Виводимо повідомлення якщо кошик порожній
     void displayCart() const {
         if (products.empty()) {
-            std::cout << "The basket is empty." << std::endl;
+            std::cout << "Your cart is empty." << std::endl;
             return;
         }
-        //Вивідимо назву, ціну, характеристику, та список товарів
-        std::cout << "Items in cart:" << std::endl;
+
+        std::cout << "-----------------------------------------------" << std::endl;
+        std::cout << "           Items in Your Shopping Cart         " << std::endl;
+        std::cout << "-----------------------------------------------" << std::endl;
+
+    //Вивідимо назву, ціну, характеристику, та список товарів
         for (const auto& product : products) {
             std::cout << "Name: " << product.name << std::endl;
-            std::cout << "Price: " << product.price << std::endl;
+            std::cout << "Price: $" << product.price << std::endl;
             std::cout << "Characteristics: " << product.specifications << std::endl;
-            std::cout << std::endl;
+            std::cout << "-----------------------------------------------" << std::endl;
         }
     }
-    //Розрахунок загальної ціни товарів в кошику
+        //Розрахунок загальної ціни товарів в кошику
     double calculateTotalPrice() const {
         double totalPrice = 0.0;
         for (const auto& product : products) {
@@ -42,13 +46,13 @@ public:
     }
 };
 
-class User {
-private:
+    class User {
+        private:
     std::string username;
     std::string password;
     ShoppingCart cart;
 
-public:
+     public:
     User(const std::string& username, const std::string& password)
             : username(username), password(password) {}
 
@@ -64,27 +68,62 @@ public:
         return cart;
     }
 };
+        //Вивід списку доступних товарів ,ціни, валюти
+        void viewProducts(const std::vector<Product>& availableProducts) {
+             std::cout << "Available products:" << std::endl;
+            for (size_t i = 0; i < availableProducts.size(); ++i) {
+        const auto& product = availableProducts[i];
+            std::cout << i + 1 << ". " << product.name << " - $" << product.price << std::endl;
+    }
+}
 
-int main() {
+        bool isUserExists(const std::vector<User>& users, const std::string& username, const std::string& password) {
+             return std::any_of(users.begin(), users.end(),
+                       [&](const User& user) { return user.getUsername() == username && user.checkPassword(password); });
+}
+
+    void addToCart(User& currentUser, const std::vector<Product>& availableProducts) {
+    viewProducts(availableProducts);
+
+    size_t productIndex;
+    while (true) {
+        std::cout << "Enter the number of the product you want to add to the cart: ";
+        std::cin >> productIndex;
+
+        if (productIndex > 0 && productIndex <= availableProducts.size()) {
+            break;
+        } else {
+            std::cout << "Invalid item number. Try again." << std::endl;
+        }
+    }
+
+    const auto& product = availableProducts[productIndex - 1];
+    currentUser.getCart().addProduct(product);
+    std::cout << "The product has been added to your shopping cart." << std::endl;
+}
+
+        int main() {
     std::vector<Product> availableProducts{
             {"iPhone 14 Pro Max", 1799.99, "512GB. Color: Purple"},
             {"iPhone 14 Pro", 1399.99, "512GB. Color: Gold"},
             {"iPhone 14", 999.99, "512GB. Color: Red"}
     };
-    // Данні поточного користувача
+
+            // Данні поточного користувача
     std::vector<User> users;
     User currentUser("", "");
 
     std::cout << "Welcome to the online store \"Cellmart\"!" << std::endl;
-        //Загальне меню магазину
+
+            //Загальне меню магазину
     while (true) {
         std::cout << std::endl;
-        std::cout << "1. Create account" << std::endl;
+        std::cout << "1. Create an account" << std::endl;
         std::cout << "2. Log in" << std::endl;
-        std::cout << "3. View products" << std::endl;
-        std::cout << "4. Add product to cart" << std::endl;
-        std::cout << "5. View cart and total price" << std::endl;
-        std::cout << "6. Delete account" << std::endl;
+        std::cout << "3. View available products" << std::endl;
+        std::cout << "4. Add a product to your shopping cart" << std::endl;
+        std::cout << "5. View your shopping cart and total price" << std::endl;
+        std::cout << "6. Delete your account" << std::endl;
         std::cout << "7. Exit" << std::endl;
         std::cout << "Select an action: ";
 
@@ -116,29 +155,16 @@ int main() {
                 std::cout << "Enter your password: ";
                 std::cin >> password;
 
-                bool found = false;
-                for (const auto& user : users) {
-                    if (user.getUsername() == username && user.checkPassword(password)) {
-                        currentUser = user;
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found) {
+                if (isUserExists(users, username, password)) {
+                    currentUser = User(username, password);
                     std::cout << "Logged in as " << currentUser.getUsername() << std::endl;
                 } else {
                     std::cout << "Invalid username or password." << std::endl;
                 }
                 break;
             }
-            //Вивід списку доступних товарів ,ціни, валюти
             case 3: {
-                std::cout << "Available products:" << std::endl;
-                for (size_t i = 0; i < availableProducts.size(); ++i) {
-                    const auto& product = availableProducts[i];
-                    std::cout << i + 1 << ". " << product.name << " - " << product.price << "USD" << std::endl;
-                }
+                viewProducts(availableProducts);
                 break;
             }
             case 4: {
@@ -147,17 +173,7 @@ int main() {
                     break;
                 }
 
-                std::cout << "Enter the number of the product you want to add to the cart:";
-                size_t productIndex;
-                std::cin >> productIndex;
-
-                if (productIndex > 0 && productIndex <= availableProducts.size()) {
-                    const auto& product = availableProducts[productIndex - 1];
-                    currentUser.getCart().addProduct(product);
-                    std::cout << "The product has been added to the cart." << std::endl;
-                } else {
-                    std::cout << "Invalid item number." << std::endl;
-                }
+                addToCart(currentUser, availableProducts);
                 break;
             }
             case 5: {
@@ -166,9 +182,9 @@ int main() {
                     break;
                 }
 
-                std::cout << "Cart of " << currentUser.getUsername() << ":" << std::endl;
+                std::cout << "Shopping cart of " << currentUser.getUsername() << ":" << std::endl;
                 currentUser.getCart().displayCart();
-                std::cout << "Total price: " << currentUser.getCart().calculateTotalPrice() << " USD" << std::endl;
+                std::cout << "Total price: $" << currentUser.getCart().calculateTotalPrice() << std::endl;
                 break;
             }
             case 6: {
@@ -190,7 +206,7 @@ int main() {
                 return 0;
             }
             default: {
-                std::cout << "Wrong choice. Try again." << std::endl;
+                std::cout << "Wrong choice! Try again." << std::endl;
                 break;
             }
         }
