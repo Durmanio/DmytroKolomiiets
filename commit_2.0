@@ -160,34 +160,45 @@ int main() {
                     break;
                 }
                 case 2: {
-                    std::string username;
-                    std::string password;
+                    if (currentUser.getUsername() != "") {
+                        std::cout << "You are already logged in as" << currentUser.getUsername() << std::endl;
+                        break;
+                    }
 
-                    std::cout << "Enter your username: ";
-                    std::cin >> username;
+                    if (users.empty()) {
+                        std::cout << "No user found, first, create an account. " << std::endl;
+                        break;
+                    }
 
-                    std::cout << "Enter your password: ";
-                    std::cin >> password;
+                    std::cout << "Enter your login details: " << std::endl;
 
-                    bool found = false;
-                    for (const auto& user : users) {
-                        if (user.getUsername() == username && user.checkPassword(password)) {
+                    std::string usernameInput;
+                    std::string passwordInput;
+
+                    std::cout << "Username: ";
+                    std::cin >> usernameInput;
+
+                    std::cout << "Password: ";
+                    std::cin >> passwordInput;
+
+                    bool loggedIn = false;
+                    for (const User& user : users) {
+                        if (user.getUsername() == usernameInput && user.checkPassword(passwordInput)) {
                             currentUser = user;
-                            found = true;
+                            loggedIn = true;
                             break;
                         }
                     }
 
-                    if (found) {
-                        std::cout << std::endl;
+                    if (loggedIn) {
                         std::cout << "Logged in as " << currentUser.getUsername() << std::endl;
-                        std::cout << "Welcome to Cellmart!" << std::endl;
                     } else {
-                        std::cout << std::endl;
                         std::cout << "Invalid username or password." << std::endl;
                     }
+
                     break;
                 }
+
                 case 3: {
                     std::cout << std::endl;
                     std::cout << "Goodbye!" << std::endl;
