@@ -103,6 +103,132 @@ void deleteAccount(std::vector<User>& users, User& currentUser) {
     std::cout << "Account deleted successfully." << std::endl;
 }
 
+        //Функції що додаються
+void handleRegisteredUser(User& currentUser, const std::vector<Product>& availableProducts, std::vector<User>& users);
+void handleUnregisteredUser(User& currentUser, const std::vector<Product>& availableProducts, std::vector<User>& users);
+int getUserAction(const std::string& userStatus);
+
+        //Отримання дій користувача
+int getUserAction(const std::string& userStatus) {
+    int choice;
+    std::cout << std::endl;
+    std::cout << userStatus;
+    std::cin >> choice;
+    return choice;
+}
+
+        // Обробка дій не зареєстрованого користувача
+void handleUnregisteredUser(User& currentUser, const std::vector<Product>& availableProducts, std::vector<User>& users) {
+    int choice = getUserAction("1. Create an account\n2. Log in\n3. Exit\nSelect an action: ");
+
+    switch (choice) {
+        case 1: {
+            std::string username;
+            std::string password;
+
+            std::cout << "Enter a username: ";
+            std::cin >> username;
+
+            std::cout << "Enter a password: ";
+            std::cin >> password;
+
+            users.emplace_back(username, password);
+            std::cout << std::endl;
+            std::cout << "Account created successfully!" << std::endl;
+            break;
+        }
+        case 2: {
+            if (currentUser.getUsername() != "") {
+                std::cout << "You are already logged in as " << currentUser.getUsername() << std::endl;
+                break;
+            }
+
+            if (users.empty()) {
+                std::cout << "No user found, first, create an account." << std::endl;
+                break;
+            }
+
+            std::cout << "Enter your login details: " << std::endl;
+
+            std::string usernameInput;
+            std::string passwordInput;
+
+            std::cout << "Username: ";
+            std::cin >> usernameInput;
+
+            std::cout << "Password: ";
+            std::cin >> passwordInput;
+
+            bool loggedIn = false;
+            for (const User& user : users) {
+                if (user.getUsername() == usernameInput && user.checkPassword(passwordInput)) {
+                    currentUser = user;
+                    loggedIn = true;
+                    break;
+                }
+            }
+
+            if (loggedIn) {
+                std::cout << "Logged in as " << currentUser.getUsername() << std::endl;
+            } else {
+                std::cout << "Invalid username or password." << std::endl;
+            }
+
+            break;
+        }
+        case 3: {
+            std::cout << std::endl;
+            std::cout << "Goodbye!" << std::endl;
+            exit(0);
+        }
+        default: {
+            std::cout << std::endl;
+            std::cout << "Wrong choice. Try again." << std::endl;
+            break;
+        }
+    }
+}
+
+        // Обробка дій зареєстрованого користувача
+void handleRegisteredUser(User& currentUser, const std::vector<Product>& availableProducts, std::vector<User>& users) {
+    int choice = getUserAction("1. View products\n2. Add a product to the cart\n3. View the cart and total price\n"
+                               "4. Delete the account\n5. Log out\n6. Exit\nSelect an action: ");
+
+    switch (choice) {
+        case 1: {
+            viewProducts(availableProducts);
+            break;
+        }
+        case 2: {
+            addToCart(currentUser, availableProducts);
+            break;
+        }
+        case 3: {
+            viewCartAndTotalPrice(currentUser);
+            break;
+        }
+        case 4: {
+            deleteAccount(users, currentUser);
+            break;
+        }
+        case 5: {
+            currentUser = User("", "");
+            std::cout << "You have successfully logged out." << std::endl;
+            break;
+        }
+        case 6: {
+            std::cout << std::endl;
+            std::cout << "Goodbye!" << std::endl;
+            exit(0);
+        }
+        default: {
+            std::cout << std::endl;
+            std::cout << "Wrong choice. Try again." << std::endl;
+            break;
+        }
+    }
+}
+
 int main() {
     std::vector<Product> availableProducts{
             {"iPhone 14 Pro Max", 1799.99, "512GB. Color: Purple"},
@@ -114,7 +240,8 @@ int main() {
             {"Samsung Galaxy S22 Ultra", 1549.98, "256GB. Color: White"},
             {"Samsung Galaxy Z Flip3 5G", 700.19, "256GB. Color: White"},
             {"Samsung Galaxy Note 20 5G", 212.85, "128GB. Color: Bronze"},
-            {"Samsung Galaxy S21", 220.10, "128GB. Color: Purple"}};
+            {"Samsung Galaxy S21", 220.10, "128GB. Color: Purple"}
+    };
 
     std::vector<User> users;
     User currentUser("", "");
@@ -125,125 +252,9 @@ int main() {
         std::cout << std::endl;
 
         if (currentUser.getUsername() == "") {
-            std::cout << "1. Create an account" << std::endl;
-            std::cout << "2. Log in" << std::endl;
-            std::cout << "3. Exit" << std::endl;
+            handleUnregisteredUser(currentUser, availableProducts, users);
         } else {
-            std::cout << "1. View products" << std::endl;
-            std::cout << "2. Add a product to the cart" << std::endl;
-            std::cout << "3. View the cart and total price" << std::endl;
-            std::cout << "4. Delete the account" << std::endl;
-            std::cout << "5. Log out" << std::endl;
-            std::cout << "6. Exit" << std::endl;
-        }
-
-        std::cout << "Select an action: ";
-
-        int choice;
-        std::cin >> choice;
-
-        if (currentUser.getUsername() == "") {
-            switch (choice) {
-                case 1: {
-                    std::string username;
-                    std::string password;
-
-                    std::cout << "Enter a username: ";
-                    std::cin >> username;
-
-                    std::cout << "Enter a password: ";
-                    std::cin >> password;
-
-                    users.emplace_back(username, password);
-                    std::cout << std::endl;
-                    std::cout << "Account created successfully!" << std::endl;
-                    break;
-                }
-                case 2: {
-                    if (currentUser.getUsername() != "") {
-                        std::cout << "You are already logged in as" << currentUser.getUsername() << std::endl;
-                        break;
-                    }
-
-                    if (users.empty()) {
-                        std::cout << "No user found, first, create an account. " << std::endl;
-                        break;
-                    }
-
-                    std::cout << "Enter your login details: " << std::endl;
-
-                    std::string usernameInput;
-                    std::string passwordInput;
-
-                    std::cout << "Username: ";
-                    std::cin >> usernameInput;
-
-                    std::cout << "Password: ";
-                    std::cin >> passwordInput;
-
-                    bool loggedIn = false;
-                    for (const User& user : users) {
-                        if (user.getUsername() == usernameInput && user.checkPassword(passwordInput)) {
-                            currentUser = user;
-                            loggedIn = true;
-                            break;
-                        }
-                    }
-
-                    if (loggedIn) {
-                        std::cout << "Logged in as " << currentUser.getUsername() << std::endl;
-                    } else {
-                        std::cout << "Invalid username or password." << std::endl;
-                    }
-
-                    break;
-                }
-
-                case 3: {
-                    std::cout << std::endl;
-                    std::cout << "Goodbye!" << std::endl;
-                    return 0;
-                }
-                default: {
-                    std::cout << std::endl;
-                    std::cout << "Wrong choice. Try again." << std::endl;
-                    break;
-                }
-            }
-        } else {
-            switch (choice) {
-                case 1: {
-                    viewProducts(availableProducts);
-                    break;
-                }
-                case 2: {
-                    addToCart(currentUser, availableProducts);
-                    break;
-                }
-                case 3: {
-                    viewCartAndTotalPrice(currentUser);
-                    break;
-                }
-                case 4: {
-                    deleteAccount(users, currentUser);
-                    break;
-                }
-                case 5: {
-                    currentUser = User("", "");
-                    std::cout << "You have successfully logged out." << std::endl;
-                    break;
-                }
-                case 6: {
-                    std::cout << std::endl;
-                    std::cout << "Goodbye!" << std::endl;
-                    return 0;
-                }
-                default: {
-                    std::cout << std::endl;
-                    std::cout << "Wrong choice. Try again." << std::endl;
-                    break;
-                }
-            }
+            handleRegisteredUser(currentUser, availableProducts, users);
         }
     }
 }
